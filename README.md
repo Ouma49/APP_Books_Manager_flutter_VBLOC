@@ -51,12 +51,12 @@ Here are some screenshots illustrating the application's usage:
 
 ![App Interface](lib/assets/interface.png)
 
-- **Searching for books:** Enter a keyword in the search bar on the home page and press the search icon or hit enter.
+-   **Searching for books:** Enter a keyword in the search bar on the home page and press the search icon or hit enter.
 
 ![Search functionality](lib/assets/search.png)
 
-- **Favoriting/Unfavoriting books:** Tap the heart icon on a book in the search results to add it to or remove it from your favorites.
-- **Viewing favorites:** Tap the favorite icon in the app bar on the home page to navigate to the Favorites screen. From there, you can see your saved books and delete them by tapping the trash icon.
+-   **Favoriting/Unfavoriting books:** Tap the heart icon on a book in the search results to add it to or remove it from your favorites.
+-   **Viewing favorites:** Tap the favorite icon in the app bar on the home page to navigate to the Favorites screen. From there, you can see your saved books and delete them by tapping the trash icon.
 
 ![Favorite functionality](lib/assets/favorite.png)
 
@@ -81,9 +81,9 @@ books_manager/
 
 ## Dependencies
 
-- `http`: For making API calls to the Google Books API.
-- `sqflite`: For local database storage of favorite books.
-- `path`: For managing database file paths.
+-   `http`: For making API calls to the Google Books API.
+-   `sqflite`: For local database storage of favorite books.
+-   `path`: For managing database file paths.
 
 These dependencies are listed in the `pubspec.yaml` file.
 
@@ -91,11 +91,9 @@ These dependencies are listed in the `pubspec.yaml` file.
 
 This application uses the Google Books API for searching books. The base URL for search is `https://www.googleapis.com/books/v1/volumes?q={keyword}`.
 
+## Report Details
 
-
-## DAOUDI OUMAYMA
-## GLSID 2 
-
-
-
-
+-   **Name:** DAOUDI OUMAYMA
+-   **Class/Course:** GLSID 2
+-   **Student ID:** [YOUR STUDENT ID]
+-   **Date:** [DATE]
