@@ -1,49 +1,31 @@
 import 'package:flutter/material.dart';
-import '../services/db_service.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import '../models/book.dart';
+import '../blocs/book_bloc/book_bloc.dart';
+import '../blocs/book_bloc/book_event.dart';
+import '../blocs/book_bloc/book_state.dart';
 
-class FavoritesPage extends StatefulWidget {
+class FavoritesPage extends StatelessWidget {
   const FavoritesPage({super.key});
-
-  @override
-  _FavoritesPageState createState() => _FavoritesPageState();
-}
-
-class _FavoritesPageState extends State<FavoritesPage> {
-  late Future<List<Book>> _favoriteBooks;
-
-  @override
-  void initState() {
-    super.initState();
-    _favoriteBooks = DbService().getItems();
-  }
-
-  void _deleteBook(String id) async {
-    await DbService().deleteItem(id);
-    setState(() {
-      _favoriteBooks =
-          DbService().getItems(); // Refresh the list after deletion
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Favorite Books')),
-      body: FutureBuilder<List<Book>>(
-        future: _favoriteBooks,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
-          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return Center(child: Text('No favorite books yet.'));
-          } else {
+      appBar: AppBar(title: const Text('Favorite Books')),
+      body: BlocBuilder<BookBloc, BookState>(
+        builder: (context, state) {
+          if (state is BookLoading) {
+            return const Center(child: CircularProgressIndicator());
+          } else if (state is BookError) {
+            return Center(child: Text('Error: ${state.message}'));
+          } else if (state is BooksLoaded) {
+            if (state.books.isEmpty) {
+              return const Center(child: Text('No favorite books yet.'));
+            }
             return ListView.builder(
-              itemCount: snapshot.data!.length,
+              itemCount: state.books.length,
               itemBuilder: (context, index) {
-                final book = snapshot.data![index];
+                final book = state.books[index];
                 return ListTile(
                   leading: Image.network(
                     book.imageUrl,
@@ -54,13 +36,16 @@ class _FavoritesPageState extends State<FavoritesPage> {
                   title: Text(book.title),
                   subtitle: Text(book.author),
                   trailing: IconButton(
-                    icon: Icon(Icons.delete),
-                    onPressed: () => _deleteBook(book.id),
+                    icon: const Icon(Icons.delete),
+                    onPressed: () {
+                      context.read<BookBloc>().add(RemoveBook(book.id));
+                    },
                   ),
                 );
               },
             );
           }
+          return const Center(child: Text('No favorite books yet.'));
         },
       ),
     );

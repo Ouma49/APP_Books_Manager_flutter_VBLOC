@@ -7,24 +7,30 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-
 import 'package:books_manager/main.dart';
+import 'package:books_manager/services/api_service.dart';
+import 'package:books_manager/services/database_service.dart';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+  // Initialiser sqflite_ffi pour les tests
+  setUpAll(() {
+    // Initialiser FFI
+    sqfliteFfiInit();
+    // Définir la factory de base de données
+    databaseFactory = databaseFactoryFfi;
+  });
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+  testWidgets('App smoke test', (WidgetTester tester) async {
+    final databaseService = DatabaseService();
+    await databaseService.init();
+    final apiService = ApiService();
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
+    await tester.pumpWidget(
+      MyApp(databaseService: databaseService, apiService: apiService),
+    );
 
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    // Verify that the app title is displayed
+    expect(find.text('Book Finder'), findsOneWidget);
   });
 }

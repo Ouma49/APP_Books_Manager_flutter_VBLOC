@@ -1,63 +1,29 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import '../models/book.dart';
-import '../services/api_service.dart';
-import '../services/db_service.dart';
+import '../blocs/book_bloc/book_bloc.dart';
+import '../blocs/book_bloc/book_event.dart';
+import '../blocs/book_bloc/book_state.dart';
+import '../blocs/search_bloc/search_bloc.dart';
+import '../blocs/search_bloc/search_event.dart';
+import '../blocs/search_bloc/search_state.dart';
 import 'favorites.page.dart';
-import 'package:sqflite/sqflite.dart';
 
-class HomePage extends StatefulWidget {
+class HomePage extends StatelessWidget {
   const HomePage({super.key});
-
-  @override
-  _HomePageState createState() => _HomePageState();
-}
-
-class _HomePageState extends State<HomePage> {
-  final TextEditingController _searchController = TextEditingController();
-  late Future<List<Book>> _searchResults;
-  final DbService _dbService = DbService();
-
-  @override
-  void initState() {
-    super.initState();
-    _searchResults = Future.value([]); // Initialize with an empty list
-  }
-
-  @override
-  void dispose() {
-    _searchController.dispose();
-    super.dispose();
-  }
-
-  void _searchBooks() {
-    setState(() {
-      _searchResults = ApiService().searchBooks(_searchController.text);
-    });
-  }
-
-  void _toggleFavorite(Book book) async {
-    final isFavorite = await _dbService.isFavorite(book.id);
-    if (isFavorite) {
-      await _dbService.deleteItem(book.id);
-    } else {
-      await _dbService.insertItem(book);
-    }
-    // No need to refresh search results, just the icon should change
-    setState(() {}); // Trigger a rebuild to update the icon
-  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Book Finder'),
+        title: const Text('Book Finder'),
         actions: [
           IconButton(
-            icon: Icon(Icons.favorite),
+            icon: const Icon(Icons.favorite),
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => FavoritesPage()),
+                MaterialPageRoute(builder: (context) => const FavoritesPage()),
               );
             },
           ),
@@ -68,44 +34,39 @@ class _HomePageState extends State<HomePage> {
           Padding(
             padding: const EdgeInsets.all(8.0),
             child: TextField(
-              controller: _searchController,
-              decoration: InputDecoration(
+              decoration: const InputDecoration(
                 labelText: 'Search by keyword',
-                suffixIcon: IconButton(
-                  icon: Icon(Icons.search),
-                  onPressed: _searchBooks,
-                ),
+                suffixIcon: Icon(Icons.search),
               ),
-              onSubmitted: (_) => _searchBooks(),
+              onSubmitted: (query) {
+                context.read<SearchBloc>().add(SearchBooks(query));
+              },
             ),
           ),
           Expanded(
-            child: FutureBuilder<List<Book>>(
-              future: _searchResults,
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return Center(child: CircularProgressIndicator());
-                } else if (snapshot.hasError) {
-                  return Center(child: Text('Error: ${snapshot.error}'));
-                } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                  return Center(
-                    child: Text('Enter a keyword to search for books.'),
-                  );
-                } else {
+            child: BlocBuilder<SearchBloc, SearchState>(
+              builder: (context, state) {
+                if (state is SearchLoading) {
+                  return const Center(child: CircularProgressIndicator());
+                } else if (state is SearchError) {
+                  return Center(child: Text('Error: ${state.message}'));
+                } else if (state is SearchLoaded) {
                   return GridView.builder(
-                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      crossAxisSpacing: 8.0,
-                      mainAxisSpacing: 8.0,
-                      childAspectRatio: 0.6, // Adjust aspect ratio as needed
-                    ),
-                    itemCount: snapshot.data!.length,
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          crossAxisSpacing: 8.0,
+                          mainAxisSpacing: 8.0,
+                          childAspectRatio: 0.6,
+                        ),
+                    itemCount: state.books.length,
                     itemBuilder: (context, index) {
-                      final book = snapshot.data![index];
-                      return FutureBuilder<bool>(
-                        future: _dbService.isFavorite(book.id),
-                        builder: (context, favoriteSnapshot) {
-                          final isFavorite = favoriteSnapshot.data ?? false;
+                      final book = state.books[index];
+                      return BlocBuilder<BookBloc, BookState>(
+                        builder: (context, bookState) {
+                          final isFavorite =
+                              bookState is BooksLoaded &&
+                              bookState.books.any((b) => b.id == book.id);
                           return Card(
                             child: Padding(
                               padding: const EdgeInsets.all(8.0),
@@ -118,13 +79,13 @@ class _HomePageState extends State<HomePage> {
                                       fit: BoxFit.cover,
                                       errorBuilder:
                                           (context, error, stackTrace) =>
-                                              Icon(Icons.book),
+                                              const Icon(Icons.book),
                                     ),
                                   ),
-                                  SizedBox(height: 8.0),
+                                  const SizedBox(height: 8.0),
                                   Text(
                                     book.title,
-                                    style: TextStyle(
+                                    style: const TextStyle(
                                       fontWeight: FontWeight.bold,
                                     ),
                                     maxLines: 2,
@@ -144,7 +105,17 @@ class _HomePageState extends State<HomePage> {
                                             : Icons.favorite_border,
                                         color: isFavorite ? Colors.red : null,
                                       ),
-                                      onPressed: () => _toggleFavorite(book),
+                                      onPressed: () {
+                                        if (isFavorite) {
+                                          context.read<BookBloc>().add(
+                                            RemoveBook(book.id),
+                                          );
+                                        } else {
+                                          context.read<BookBloc>().add(
+                                            AddBook(book),
+                                          );
+                                        }
+                                      },
                                     ),
                                   ),
                                 ],
@@ -156,23 +127,14 @@ class _HomePageState extends State<HomePage> {
                     },
                   );
                 }
+                return const Center(
+                  child: Text('Enter a keyword to search for books.'),
+                );
               },
             ),
           ),
         ],
       ),
     );
-  }
-}
-
-extension on DbService {
-  Future<bool> isFavorite(String id) async {
-    final db = await database;
-    final count = await db.rawQuery(
-      'SELECT COUNT(*) FROM favorites WHERE id = ?',
-      [id],
-    );
-    int? result = Sqflite.firstIntValue(count);
-    return result != null && result > 0;
   }
 }

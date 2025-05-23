@@ -1,25 +1,43 @@
-# Book Manager App
+# BookApp - Gestionnaire de Livres avec BLoC
 
-## Description
+Une application Flutter moderne pour rechercher et gérer vos livres favoris, implémentée avec l'architecture BLoC.
 
-A simple Flutter application for searching books using the Google Books API, saving favorite books locally using SQLite, and viewing/managing the list of favorites.
+## Fonctionnalités
 
-## Features
+- 🔍 Recherche de livres via l'API Google Books
+- ❤️ Ajout/Suppression de livres aux favoris
+- 📚 Vue dédiée pour les livres favoris
+- 💾 Persistance des données avec SQLite
+- 🎨 Interface utilisateur moderne et intuitive
 
-- Search for books by keyword using the Google Books API.
-- View book details including title, author, and cover image.
-- Add/remove books to a local favorites list.
-- View the list of favorite books.
-- Delete books from the favorites list.
+## Architecture
 
-## Setup
+L'application utilise l'architecture BLoC (Business Logic Component) pour une meilleure séparation des responsabilités :
 
-To run this project locally, follow these steps:
+- **BLoCs** :
+  - `BookBloc` : Gestion des livres favoris
+  - `SearchBloc` : Gestion de la recherche de livres
 
-1.  **Clone the repository:**
+- **Services** :
+  - `ApiService` : Communication avec l'API Google Books
+  - `DatabaseService` : Gestion de la base de données SQLite
+
+- **Modèles** :
+  - `Book` : Modèle de données pour les livres
+
+## Prérequis
+
+- Flutter SDK (version 3.7.2 ou supérieure)
+- Dart SDK (version 3.0.0 ou supérieure)
+- Un IDE (VS Code, Android Studio, ou IntelliJ IDEA)
+- Un émulateur ou un appareil physique pour le test
+
+## Installation
+
+1. Clonez le dépôt :
 
     ```bash
-    git clone https://github.com/Ouma49/APP_Books_Manager_flutter.git
+    git clone https://github.com/Ouma49/APP_Books_Manager_flutter_VBLOC.git
     cd books_manager
     ```
 
@@ -45,55 +63,78 @@ To run this project locally, follow these steps:
 
     If you don't have an emulator running, you can list available emulators with `flutter emulators` and launch one with `flutter emulators --launch <emulator_id>`.
 
-## Usage
+## Exécution de l'application
 
-Here are some screenshots illustrating the application's usage:
+1. Démarrez un émulateur ou connectez un appareil physique
 
-![App Interface](lib/assets/interface.png)
+2. Exécutez l'application :
 
--   **Searching for books:** Enter a keyword in the search bar on the home page and press the search icon or hit enter.
+    ```bash
+    flutter run
+    ```
 
-![Search functionality](lib/assets/search.png)
-
--   **Favoriting/Unfavoriting books:** Tap the heart icon on a book in the search results to add it to or remove it from your favorites.
--   **Viewing favorites:** Tap the favorite icon in the app bar on the home page to navigate to the Favorites screen. From there, you can see your saved books and delete them by tapping the trash icon.
-
-![Favorite functionality](lib/assets/favorite.png)
-
-## Project Structure
+## Structure du Projet
 
 ```
 books_manager/
 ├── lib/
+│   ├── blocs/
+│   │   ├── book_bloc/
+│   │   │   ├── book_bloc.dart
+│   │   │   ├── book_event.dart
+│   │   │   └── book_state.dart
+│   │   └── search_bloc/
+│   │       ├── search_bloc.dart
+│   │       ├── search_event.dart
+│   │       └── search_state.dart
 │   ├── models/
 │   │   └── book.dart
 │   ├── pages/
-│   │   ├── detail.page.dart (Optional: for future detailed view)
-│   │   ├── favorites.page.dart
-│   │   └── home.page.dart
+│   │   ├── home.page.dart
+│   │   └── favorites.page.dart
 │   ├── services/
 │   │   ├── api_service.dart
-│   │   └── db_service.dart
+│   │   └── database_service.dart
 │   └── main.dart
 ├── README.md
 └── pubspec.yaml
 ```
 
-## Dependencies
+## Utilisation
 
--   `http`: For making API calls to the Google Books API.
--   `sqflite`: For local database storage of favorite books.
--   `path`: For managing database file paths.
+### Interface Principale
+![Interface Principale](lib/assets/fav.png)
 
-These dependencies are listed in the `pubspec.yaml` file.
+### Gestion des Favoris
+![Gestion des Favoris](lib/assets/fav2.png)
 
-## API
+1. **Recherche de livres** :
+   - Entrez un mot-clé dans la barre de recherche
+   - Les résultats s'afficheront dans une grille
 
-This application uses the Google Books API for searching books. The base URL for search is `https://www.googleapis.com/books/v1/volumes?q={keyword}`.
+2. **Gestion des favoris** :
+   - Cliquez sur l'icône de cœur pour ajouter/supprimer un livre des favoris
+   - Accédez à la liste des favoris via l'icône dans la barre d'application
+
+## Dépendances Principales
+
+- `flutter_bloc` : ^8.1.4 - Gestion de l'état avec BLoC
+- `equatable` : ^2.0.5 - Comparaison d'états
+- `sqflite` : ^2.4.2 - Base de données SQLite
+- `http` : ^1.4.0 - Requêtes HTTP
+- `path` : ^1.9.1 - Gestion des chemins de fichiers
+
+## Tests
+
+L'application inclut des tests unitaires et des tests de widget. Pour exécuter les tests :
+
+```bash
+flutter test
+```
+
 
 ## Report Details
 
 -   **Name:** DAOUDI OUMAYMA
--   **Class/Course:** GLSID 2
--   **Student ID:** [YOUR STUDENT ID]
--   **Date:** [DATE]
+-   **Class/Course:**  Mobile / GLSID 2
+
